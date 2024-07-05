@@ -1,0 +1,54 @@
+Assignment Brief:
+You are working for a loyalty program company that sends out personalized emails to its members. Each email needs to include specific information about upcoming events. 
+The information about the properties and events is stored in separate data extensions, and you need to use the Lookup function to retrieve this data dynamically. 
+Requirements:
+Email Content:
+Retrieve the member's favorite property information from the MemberProperties data extension.
+Retrieve the upcoming event information from the Events data extension.
+Populate the email with the member's favorite property details and upcoming events.
+
+%%[
+SET @fName = [FirstName]
+SET @mpp = [MostPlayedPropertyID]
+IF NOT EMPTY(@FirstName) THEN
+SET @firstNameTrim = TRIM(@fName)
+SET @finalName = Propercase(@firstNameTrim)
+ELSE
+SET @finalName = "Hey There"
+ENDIF
+
+/* RETRIEVE FIELD FROM SENDING DE TO USE IN THE LOOK UP FUNCTION */
+SET @Key1 = [MostPlayedPropertyID]
+
+/* LOOK UP FUNCTION */
+SET @FieldNameToRetrieve = Lookup("Properties>", "PropertyName", "PropertyID", @Key1)
+
+
+SET @Key1 = [MostPlayedPropertyID]
+SET @rows = LookupRows("Events", "PropertyID", @Key1)
+
+SET @rowCount = rowcount(@rows)
+
+/* CHECKS IF THERE IS A ROW THAT EXISTS */
+IF @rowCount > 0 THEN
+
+  SET @row = row(@rows,1)
+  /* IF YOU WANT TO RETRIEVE MORE THAN 3 FIELDS, ADD MORE ROWS AS PER BELOW */
+  /* IF YOU WANT TO RETRIEVE LESS THAN 3 FIELDS, REMOVE ROWS AS PER BELOW */
+  SET @FieldName1 = field(@row, "EventName")
+  SET @FieldName2 = field(@row, "EventDate")
+  SET @FieldName3 = field(@row, "EventDescription")
+
+/* IF THE ROW DOES NOT EXIST */
+ELSE
+  
+  /* THIS FUNCTION WILL CANCEL THE EMAIL OR SMS SEND */
+  RaiseError("No row was found")  
+
+ENDIF
+
+
+]%%
+
+
+                    
